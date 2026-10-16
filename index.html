@@ -809,23 +809,34 @@ var DROP_INFO={
   magnet:{color:'#ffd060',ch:'M'}
 };
 function PowerDrop(x,y,type){
-  this.x=x;this.y=y;this.type=type;this.alive=true;this.life=10;this.bob=rand(0,TAU);
-  this.vx=rand(-40,40);this.vy=-60;
+  this.x=x;this.y=y;this.type=type;this.alive=true;this.life=14;this.bob=rand(0,TAU);
+  this.vx=0;this.vy=-40;
 }
 PowerDrop.prototype.update=function(dt){
   this.life-=dt;
   if(this.life<=0){this.alive=false;return}
   this.bob+=dt*6;
-  if(player&&player.magnetT>0&&player.alive){
-    var dx=player.x-this.x,dy=player.y-this.y,d=Math.hypot(dx,dy)||1;
-    this.vx+=(dx/d)*1400*dt;this.vy+=(dy/d)*1400*dt;
-  } else this.vy+=280*dt;
-  this.vx*=.98;
+  var fallSpeed=90+wave*8;
+  if(fallSpeed>280)fallSpeed=280;
+  if(player&&player.alive&&player.magnetT>0){
+    var dx=player.x-this.x,dy=player.y-this.y;
+    var d=Math.hypot(dx,dy)||1;
+    if(d<500){
+      this.vx+=(dx/d)*2000*dt;
+      this.vy+=(dy/d)*2000*dt;
+      this.vx*=0.94;
+    }
+  } else {
+    this.vx*=0.7;
+  }
+  this.vy+=fallSpeed*dt;
+  this.vy*=0.99;
   this.x+=this.vx*dt;this.y+=this.vy*dt;
-  if(this.y>H+40){this.alive=false;return}
+  if(this.y>H+30){this.alive=false;return}
   if(player&&player.alive){
-    var dx2=player.x-this.x,dy2=player.y-this.y;
-    if(dx2*dx2+dy2*dy2<900){this.apply();this.alive=false}
+    var pdx=player.x-this.x,pdy=player.y-this.y;
+    var pickRadius=58;
+    if(pdx*pdx+pdy*pdy<pickRadius*pickRadius){this.apply();this.alive=false}
   }
 };
 PowerDrop.prototype.apply=function(){
